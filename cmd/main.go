@@ -19,7 +19,6 @@ func main() {
 	db := database.InitDB()
 	defer db.Close()
 
-	// Dependency Injection
 	movieRepo := repository.NewMovieRepository(db)
 	movieUsecase := usecase.NewMovieUsecase(movieRepo)
 	movieHandler := delivery.NewMovieHandler(movieUsecase)
@@ -31,25 +30,20 @@ func main() {
 	r := mux.NewRouter()
 
 	// --- 1. PUBLIC ROUTES ---
-	// Rute publik untuk melihat data
 	r.HandleFunc("/movies", movieHandler.GetMovies).Methods("GET")
 	r.HandleFunc("/movies/{id}", movieHandler.GetMovieByID).Methods("GET")
 	r.HandleFunc("/series", seriesHandler.GetSeries).Methods("GET")
 	r.HandleFunc("/series/{id}", seriesHandler.GetSeriesByID).Methods("GET")
 
 	// --- 2. ADMIN ROUTES (MANAGEMENT) ---
-	// Buat sub-router untuk proteksi admin
 	adminRouter := r.PathPrefix("/api/admin").Subrouter()
 	
-	// Gunakan Middleware untuk proteksi (Ini menghilangkan error "imported and not used")
 	adminRouter.Use(middleware.AuthMiddleware)
 
-	// Movie CRUD (Hanya Admin)
 	adminRouter.HandleFunc("/movies", movieHandler.CreateMovie).Methods("POST")
 	adminRouter.HandleFunc("/movies/{id}", movieHandler.UpdateMovie).Methods("PUT")
 	adminRouter.HandleFunc("/movies/{id}", movieHandler.DeleteMovie).Methods("DELETE")
 
-	// Series CRUD (Hanya Admin)
 	adminRouter.HandleFunc("/series", seriesHandler.CreateSeries).Methods("POST")
 	adminRouter.HandleFunc("/series/{id}", seriesHandler.UpdateSeries).Methods("PUT")
 	adminRouter.HandleFunc("/series/{id}", seriesHandler.DeleteSeries).Methods("DELETE")

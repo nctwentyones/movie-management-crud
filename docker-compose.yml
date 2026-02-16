@@ -29,9 +29,9 @@ services:
     container_name: movie-app
     restart: always
     ports:
-      - "8080:8080"
+      - "8081:8081"
     environment:
-      PORT: ${PORT}
+      PORT: 8081
       DB_HOST: db
       DB_PORT: 5432
       DB_USER: ${DB_USER}

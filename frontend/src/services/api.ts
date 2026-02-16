@@ -2,6 +2,7 @@ import axios from 'axios';
 import { Media } from '@/types/media'; 
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const ADMIN_PREFIX = '/api/admin';
 
 export const api = axios.create({
   baseURL: API_URL,
@@ -10,6 +11,7 @@ export const api = axios.create({
   },
 });
 
+// Interceptor untuk pasang Token otomatis di setiap request
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null; 
   if (token) {
@@ -18,57 +20,54 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// --- MOVIE SERVICE ---
 export const movieService = {
+  // Public Routes (Tanpa Prefix Admin)
   getAll: async () => {
     const response = await api.get<Media[]>('/movies');
     return response.data;
   },
-  
   getById: async (id: number) => {
     const response = await api.get<Media>(`/movies/${id}`);
     return response.data;
   },
   
+  // Admin Routes (Pakai Prefix /api/admin)
   create: async (data: Partial<Media>) => {
-    // Changed path from /series to /movies
-    const response = await api.post<Media>('/api/admin/movies', data);
+    const response = await api.post<Media>(`${ADMIN_PREFIX}/movies`, data);
     return response.data;
   },
-  
   update: async (id: number, data: Partial<Media>) => {
-    const response = await api.put<Media>(`/api/admin/movies/${id}`, data);
+    const response = await api.put<Media>(`${ADMIN_PREFIX}/movies/${id}`, data);
     return response.data;
   },
-  
   delete: async (id: number) => {
-    // Removed the undefined 'data' variable
-    await api.delete(`/api/admin/movies/${id}`);
+    await api.delete(`${ADMIN_PREFIX}/movies/${id}`);
   },
 };
 
+// --- SERIES SERVICE ---
 export const seriesService = {
-  // Mendapatkan semua series (Public)
+  // Public Routes
   getAll: async () => {
-    const response = await api.get<Media[]>('/api/series'); // Sesuaikan path jika di backend berubah
+    const response = await api.get<Media[]>('/series'); 
     return response.data;
   },
-
   getById: async (id: number) => {
-    const response = await api.get<Media>(`/api/series/${id}`);
+    const response = await api.get<Media>(`/series/${id}`);
     return response.data;
   },
-  
+
+  // Admin Routes
   create: async (data: Partial<Media>) => {
-    const response = await api.post<Media>('/api/admin/series', data);
+    const response = await api.post<Media>(`${ADMIN_PREFIX}/series`, data);
     return response.data;
   },
-
   update: async (id: number, data: Partial<Media>) => {
-    const response = await api.put<Media>(`/api/admin/series/${id}`, data);
+    const response = await api.put<Media>(`${ADMIN_PREFIX}/series/${id}`, data);
     return response.data;
   },
-
   delete: async (id: number) => {
-    await api.delete(`/api/admin/series/${id}`);
+    await api.delete(`${ADMIN_PREFIX}/series/${id}`);
   },
 };

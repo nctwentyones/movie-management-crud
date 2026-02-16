@@ -25,45 +25,49 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | undefined>(undefined);
   const keycloakRef = useRef<Keycloak | null>(null);
 
-  useEffect(() => {
+    useEffect(() => {
     const initKeycloak = async () => {
-      const kc = new Keycloak({
-        url: "http://localhost:8080", // URL Keycloak kamu
-        realm: "your-realm",          // Nama Realm
-        clientId: "your-client-id",   // Client ID
-      });
+        const kc = new Keycloak({
+        url: "http://localhost:8081", // Pastikan port tidak bentrok dengan backend
+        realm: "your-realm",
+        clientId: "your-client-id",
+        });
 
-      try {
+        try {
         const authenticated = await kc.init({ 
-          onLoad: "check-sso",
-          silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html" 
+            onLoad: "check-sso",
+            silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html" 
         });
 
         if (authenticated) {
-          setToken(kc.token);
-          // Mengambil role dari realm_access atau resource_access Keycloak
-          const roles = kc.realmAccess?.roles || [];
-          const isAdmin = roles.includes("admin");
+            // SIMPAN KE LOCALSTORAGE DISINI
+            if (kc.token) {
+            localStorage.setItem('token', kc.token);
+            setToken(kc.token);
+            }
 
-          setUser({
+            const roles = kc.realmAccess?.roles || [];
+            const isAdmin = roles.includes("admin");
+
+            setUser({
             username: kc.tokenParsed?.preferred_username || "User",
             role: isAdmin ? "admin" : "user",
-          });
+            });
         }
-      } catch (error) {
+        } catch (error) {
         console.error("Keycloak init error:", error);
-      } finally {
+        } finally {
         setIsLoading(false);
         keycloakRef.current = kc;
-      }
+        }
     };
 
     initKeycloak();
-  }, []);
+    }, []);
 
   const login = () => keycloakRef.current?.login();
   const logout = () => {
-    localStorage.clear();
+    localStorage.removeItem('token');
     keycloakRef.current?.logout({ redirectUri: window.location.origin });
   };
 
