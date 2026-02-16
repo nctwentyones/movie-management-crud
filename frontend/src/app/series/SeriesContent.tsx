@@ -14,10 +14,9 @@ export default function SeriesContent() {
   const [series, setSeries] = useState<Media[]>([]);
 
   useEffect(() => {
-    fetch("http://localhost:8080/series")
+    fetch("http://localhost:8081/series")
       .then((res) => res.json())
       .then((data) => {
-        // PENGAMAN: Pastikan data adalah array sebelum di-set ke state
         setSeries(Array.isArray(data) ? data : []);
       })
       .catch((err) => {

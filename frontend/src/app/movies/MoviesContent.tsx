@@ -14,11 +14,14 @@ export default function MoviesContent() {
   const [movies, setMovies] = useState<Media[]>([]);
 
   useEffect(() => {
-      fetch("http://localhost:8080/movies")
-      .then((res) => res.json())
-      .then((data) => setMovies(data))
-      .catch((err) => console.error("Error fetching movies:", err));
-  }, []);
+    fetch("http://localhost:8081/movies") 
+    .then((res) => {
+        if (!res.ok) throw new Error("Network response was not ok");
+        return res.json();
+    })
+    .then((data) => setMovies(data))
+    .catch((err) => console.error("Error fetching movies:", err));
+}, []);
 
   return (
     <Container maxWidth="lg" sx={{ mt: 4 }}>

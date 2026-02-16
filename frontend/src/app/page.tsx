@@ -13,8 +13,8 @@ export default function HomePage() {
     const fetchData = async () => {
       try {
         const [resMovies, resSeries] = await Promise.all([
-          fetch("http://localhost:8080/movies"),
-          fetch("http://localhost:8080/series"),
+          fetch("http://localhost:8081/movies"),
+          fetch("http://localhost:8081/series"),
         ]);
 
         const dataMovies = await resMovies.json();
