@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Media } from '@/types/media'; 
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8080';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 const ADMIN_PREFIX = '/api/admin';
 
 export const api = axios.create({

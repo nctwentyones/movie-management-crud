@@ -14,6 +14,6 @@ COPY . .
 RUN go build -o main ./cmd/main.go
 
 WORKDIR /app
-EXPOSE 8080
+EXPOSE 8081
 
 CMD ["air", "-c", ".air.toml"]
