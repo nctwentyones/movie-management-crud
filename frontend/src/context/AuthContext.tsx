@@ -28,7 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
     const initKeycloak = async () => {
         const kc = new Keycloak({
-        url: "http://localhost:8081", // Pastikan port tidak bentrok dengan backend
+        url: "http://localhost:8443", // Pastikan port tidak bentrok dengan backend
         realm: "your-realm",
         clientId: "your-client-id",
         });

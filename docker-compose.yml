@@ -1,6 +1,5 @@
-version: '3.8'
-
 services:
+  # 1. DATABASE
   db:
     build:
       context: .
@@ -11,7 +10,6 @@ services:
       POSTGRES_USER: ${DB_USER}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
-      TZ: Asia/Jakarta
     ports:
       - "5433:5432"
     volumes:
@@ -21,15 +19,16 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - movie_network
 
+  # 2. BACKEND (GO)
   app:
     build:
       context: .
       dockerfile: ./docker/app.Dockerfile
     container_name: movie-app
     restart: always
-    ports:
-      - "8081:8081"
     environment:
       PORT: 8081
       DB_HOST: db
@@ -39,10 +38,72 @@ services:
       DB_NAME: ${DB_NAME}
     depends_on:
       db:
-        condition: service_healthy 
+        condition: service_healthy
     volumes:
       - .:/app
       - go_modules:/go/pkg/mod
+    networks:
+      - movie_network
+
+  # 3. FRONTEND (NEXT.JS)
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: movie-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8081
+    depends_on:
+      - app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    networks:
+      - movie_network
+
+  # 4. TOOLS (PGADMIN)
+  pgadmin:
+    container_name: pgadmin-movie
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: celyn@mail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - movie_network
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0
+    container_name: movie-keycloak
+    command: start-dev
+    environment:
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8443
+      KC_HOSTNAME_STRICT: "false"
+      KC_HTTP_ENABLED: "true"
+      KC_HTTP_PORT: 8443
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      KC_DB_USERNAME: ${DB_USER}
+      KC_DB_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "8443:8443"
+    networks:
+      - movie_network
+    depends_on:
+      db:
+        condition: service_healthy
+
+networks:
+  movie_network:
+    driver: bridge
 
 volumes:
   postgres_data:

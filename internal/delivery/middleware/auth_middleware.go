@@ -1,8 +1,11 @@
 package middleware
 
 import (
+	"context"
 	"net/http"
 	"strings"
+
+	"github.com/coreos/go-oidc/v3/oidc"
 )
 
 func AuthMiddleware(next http.Handler) http.Handler {
@@ -21,10 +24,40 @@ func AuthMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		// TODO: Di sini nanti kita tambahkan library untuk verifikasi 
-		// tanda tangan token ke server Keycloak. 
-		// Sementara kita loloskan agar tidak error saat compile.
-		
+		tokenString := parts[1]
+
+		// 3. Konfigurasi OIDC Provider (Keycloak)
+		// Sesuaikan URL, Realm, dan ClientID dengan yang ada di AuthContext.tsx
+		ctx := context.Background()
+		provider, err := oidc.NewProvider(ctx, "http://localhost:8443/realms/your-realm")
+		if err != nil {
+			http.Error(w, "Failed to connect to Keycloak", http.StatusInternalServerError)
+			return
+		}
+
+		// 4. Verifikasi Token
+		oidcConfig := &oidc.Config{
+			ClientID: "your-client-id",
+		}
+		verifier := provider.Verifier(oidcConfig)
+
+		idToken, err := verifier.Verify(ctx, tokenString)
+		if err != nil {
+			http.Error(w, "Invalid or expired token: "+err.Error(), http.StatusUnauthorized)
+			return
+		}
+
+		// (Opsional) Ambil klaim seperti username atau role jika dibutuhkan
+		var claims struct {
+			PreferredUsername string   `json:"preferred_username"`
+			Roles             []string `json:"roles"`
+		}
+		if err := idToken.Claims(&claims); err != nil {
+			http.Error(w, "Failed to parse claims", http.StatusInternalServerError)
+			return
+		}
+
+		// Lanjutkan request jika token valid
 		next.ServeHTTP(w, r)
 	})
 }
