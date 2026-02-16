@@ -1,0 +1,17 @@
+services:
+  pgadmin:
+    container_name: pgadmin-movie
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: celyn@mail.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    networks:
+      - movie_network
+
+networks:
+  movie_network:
+    external: true
+    name: movie_crud_default

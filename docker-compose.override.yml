@@ -1,0 +1,16 @@
+services:
+  frontend:
+    build:
+      context: ./frontend  # Docker akan mencari Dockerfile di dalam folder frontend
+      dockerfile: Dockerfile
+    container_name: movie-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+    depends_on:
+      - app
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules

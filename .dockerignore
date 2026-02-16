@@ -1,0 +1,8 @@
+.git/
+bin/
+vendor/
+*.exe
+*.test
+.env
+frontend/
+node_modules/

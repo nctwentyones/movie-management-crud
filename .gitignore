@@ -1,0 +1,32 @@
+# Dependency folders
+frontend/node_modules/
+node_modules/
+dist/
+build/
+
+# Next.js build output
+frontend/.next/
+.next/
+out/
+
+# Golang binaries & temporary files
+bin/
+main
+*.exe
+*.test
+*.out
+__debug_bin
+
+# Environment variables (Sangat Penting untuk Keamanan!)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Docker
+.docker/
+
+# OS generated files
+.DS_Store
+Thumbs.db
