@@ -12,13 +12,14 @@ import (
 	"movie_crud/pkg/database"
 
 	"github.com/gorilla/mux"
-	"github.com/rs/cors" 
+	"github.com/rs/cors"
 )
 
 func main() {
 	db := database.InitDB()
 	defer db.Close()
 
+	// Dependency Injection
 	movieRepo := repository.NewMovieRepository(db)
 	movieUsecase := usecase.NewMovieUsecase(movieRepo)
 	movieHandler := delivery.NewMovieHandler(movieUsecase)
@@ -29,31 +30,36 @@ func main() {
 
 	r := mux.NewRouter()
 
-	// 2. Grouping Route Publik (Hanya GET)
+	// --- 1. PUBLIC ROUTES ---
+	// Rute publik untuk melihat data
 	r.HandleFunc("/movies", movieHandler.GetMovies).Methods("GET")
 	r.HandleFunc("/movies/{id}", movieHandler.GetMovieByID).Methods("GET")
 	r.HandleFunc("/series", seriesHandler.GetSeries).Methods("GET")
 	r.HandleFunc("/series/{id}", seriesHandler.GetSeriesByID).Methods("GET")
 
-	admin := r.PathPrefix("/api/admin").Subrouter()
-	admin.Use(middleware.AuthMiddleware) 
+	// --- 2. ADMIN ROUTES (MANAGEMENT) ---
+	// Buat sub-router untuk proteksi admin
+	adminRouter := r.PathPrefix("/api/admin").Subrouter()
+	
+	// Gunakan Middleware untuk proteksi (Ini menghilangkan error "imported and not used")
+	adminRouter.Use(middleware.AuthMiddleware)
 
-	// Sub-route untuk Movies di dalam Admin
-	admin.HandleFunc("/movies", movieHandler.CreateMovie).Methods("POST")
-	admin.HandleFunc("/movies/{id}", movieHandler.UpdateMovie).Methods("PUT")
-	admin.HandleFunc("/movies/{id}", movieHandler.DeleteMovie).Methods("DELETE")
+	// Movie CRUD (Hanya Admin)
+	adminRouter.HandleFunc("/movies", movieHandler.CreateMovie).Methods("POST")
+	adminRouter.HandleFunc("/movies/{id}", movieHandler.UpdateMovie).Methods("PUT")
+	adminRouter.HandleFunc("/movies/{id}", movieHandler.DeleteMovie).Methods("DELETE")
 
-	// Sub-route untuk Series di dalam Admin
-	admin.HandleFunc("/series", seriesHandler.CreateSeries).Methods("POST")
-	admin.HandleFunc("/series/{id}", seriesHandler.UpdateSeries).Methods("PUT")
-	admin.HandleFunc("/series/{id}", seriesHandler.DeleteSeries).Methods("DELETE")
+	// Series CRUD (Hanya Admin)
+	adminRouter.HandleFunc("/series", seriesHandler.CreateSeries).Methods("POST")
+	adminRouter.HandleFunc("/series/{id}", seriesHandler.UpdateSeries).Methods("PUT")
+	adminRouter.HandleFunc("/series/{id}", seriesHandler.DeleteSeries).Methods("DELETE")
 
+	// --- 3. CORS CONFIGURATION ---
 	c := cors.New(cors.Options{
 		AllowedOrigins:   []string{"http://localhost:3000"},
 		AllowedMethods:   []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowedHeaders:   []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
-		Debug:            true,
 	})
 
 	handler := c.Handler(r)
