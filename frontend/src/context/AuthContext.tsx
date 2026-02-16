@@ -1,7 +1,7 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import React, { createContext, useContext, useState, useEffect, useRef } from "react";
+import Keycloak from "keycloak-js";
 
 interface User {
   username: string;
@@ -10,9 +10,11 @@ interface User {
 
 interface AuthContextType {
   user: User | null;
-  login: (token: string, userData: User) => void;
-  logout: () => void;
+  isAuthenticated: boolean;
   isLoading: boolean;
+  login: () => void;
+  logout: () => void;
+  token: string | undefined;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -20,41 +22,60 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const router = useRouter();
+  const [token, setToken] = useState<string | undefined>(undefined);
+  const keycloakRef = useRef<Keycloak | null>(null);
 
   useEffect(() => {
-    // Cek apakah ada session di localStorage saat pertama kali load
-    const savedUser = localStorage.getItem("user");
-    const token = localStorage.getItem("token");
+    const initKeycloak = async () => {
+      const kc = new Keycloak({
+        url: "http://localhost:8080", // URL Keycloak kamu
+        realm: "your-realm",          // Nama Realm
+        clientId: "your-client-id",   // Client ID
+      });
 
-    if (savedUser && token) {
-      setUser(JSON.parse(savedUser));
-    }
-    setIsLoading(false);
+      try {
+        const authenticated = await kc.init({ 
+          onLoad: "check-sso",
+          silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html" 
+        });
+
+        if (authenticated) {
+          setToken(kc.token);
+          // Mengambil role dari realm_access atau resource_access Keycloak
+          const roles = kc.realmAccess?.roles || [];
+          const isAdmin = roles.includes("admin");
+
+          setUser({
+            username: kc.tokenParsed?.preferred_username || "User",
+            role: isAdmin ? "admin" : "user",
+          });
+        }
+      } catch (error) {
+        console.error("Keycloak init error:", error);
+      } finally {
+        setIsLoading(false);
+        keycloakRef.current = kc;
+      }
+    };
+
+    initKeycloak();
   }, []);
 
-  const login = (token: string, userData: User) => {
-    localStorage.setItem("token", token);
-    localStorage.setItem("user", JSON.stringify(userData));
-    setUser(userData);
-    
-    // Redirect berdasarkan role
-    if (userData.role === "admin") {
-      router.push("/admin/dashboard");
-    } else {
-      router.push("/");
-    }
-  };
-
+  const login = () => keycloakRef.current?.login();
   const logout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    router.push("/login");
+    localStorage.clear();
+    keycloakRef.current?.logout({ redirectUri: window.location.origin });
   };
 
   return (
-    <AuthContext.Provider value={{ user, login, logout, isLoading }}>
+    <AuthContext.Provider value={{ 
+      user, 
+      isAuthenticated: !!user, 
+      isLoading, 
+      login, 
+      logout, 
+      token 
+    }}>
       {children}
     </AuthContext.Provider>
   );

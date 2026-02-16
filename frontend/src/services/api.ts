@@ -44,15 +44,31 @@ export const movieService = {
     // Removed the undefined 'data' variable
     await api.delete(`/api/admin/movies/${id}`);
   },
-}; // <--- Added this missing closing brace
+};
 
 export const seriesService = {
+  // Mendapatkan semua series (Public)
   getAll: async () => {
-    const response = await api.get<Media[]>('/series');
+    const response = await api.get<Media[]>('/api/series'); // Sesuaikan path jika di backend berubah
     return response.data;
   },
+
+  getById: async (id: number) => {
+    const response = await api.get<Media>(`/api/series/${id}`);
+    return response.data;
+  },
+  
   create: async (data: Partial<Media>) => {
     const response = await api.post<Media>('/api/admin/series', data);
     return response.data;
-  }
+  },
+
+  update: async (id: number, data: Partial<Media>) => {
+    const response = await api.put<Media>(`/api/admin/series/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: number) => {
+    await api.delete(`/api/admin/series/${id}`);
+  },
 };

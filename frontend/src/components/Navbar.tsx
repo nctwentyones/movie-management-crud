@@ -1,12 +1,11 @@
-"use client"; // Pastikan ada ini jika menggunakan Next.js App Router
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { AppBar, Container, Toolbar, Typography, Box, Button, InputBase, styled, alpha } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import { useAuth } from "@/context/AuthContext"; // Sesuaikan path ini
+import { useAuth } from "@/context/AuthContext";
 
-// --- Styled Components untuk Search Bar ---
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
   borderRadius: theme.shape.borderRadius,
@@ -40,64 +39,40 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar() {
-  const { user, logout } = useAuth(); 
+  const { user, logout } = useAuth();
   const pathname = usePathname();
-
-  // 1. Menu yang bisa dilihat semua orang (termasuk tamu)
-  const publicItems = [
-    { label: "Home", path: "/" },
-  ];
-
-  // 2. Menu yang hanya muncul untuk ADMIN
-  const adminItems = [
-    { label: "Manage Movies", path: "/movies" },
-    { label: "Manage Series", path: "/series" },
-    { label: "Dashboard", path: "/admin/dashboard" },
-  ];
 
   return (
     <AppBar position="sticky" sx={{ bgcolor: "#000000", borderBottom: "1px solid #333" }}>
       <Container maxWidth="xl">
         <Toolbar disableGutters>
+          {/* Brand Movie.id */}
           <Typography
             variant="h5"
             component={Link}
             href="/"
-            sx={{ fontWeight: 800, color: "#ff4d00", textDecoration: "none", mr: 4, letterSpacing: "1px" }}
+            sx={{ fontWeight: 800, color: "#ff4d00", textDecoration: "none", mr: 2, letterSpacing: "1px" }}
           >
             Movie.id
           </Typography>
 
+          {/* Bagian Kiri: Tombol Admin (Hanya muncul jika admin) */}
           <Box sx={{ flexGrow: 1, display: "flex", gap: 2, alignItems: 'center' }}>
-            {/* Render Menu Publik */}
-            {publicItems.map((item) => (
+            {user?.role === "admin" && (
               <Button
-                key={item.path}
                 component={Link}
-                href={item.path}
+                href="/admin/dashboard"
                 sx={{
-                  color: pathname === item.path ? "#ff4d00" : "white",
-                  fontWeight: pathname === item.path ? "bold" : "medium",
+                  color: pathname.startsWith("/admin") ? "#ff4d00" : "white",
+                  fontWeight: "bold",
+                  border: "1px solid #333",
+                  borderRadius: "8px",
+                  '&:hover': { bgcolor: "rgba(255, 77, 0, 0.1)" }
                 }}
               >
-                {item.label}
+                Movie Management
               </Button>
-            ))}
-
-            {/* Render Menu Admin (Hanya jika role === admin) */}
-            {user?.role === "admin" && adminItems.map((item) => (
-              <Button
-                key={item.path}
-                component={Link}
-                href={item.path}
-                sx={{
-                  color: pathname === item.path ? "#ff4d00" : "white",
-                  fontWeight: pathname === item.path ? "bold" : "medium",
-                }}
-              >
-                {item.label}
-              </Button>
-            ))}
+            )}
 
             <Search>
               <SearchIconWrapper><SearchIcon /></SearchIconWrapper>
@@ -105,8 +80,32 @@ export default function Navbar() {
             </Search>
           </Box>
           
-          {/* Bagian Login/Logout tetap sama */}
-          {/* ... */}
+          {/* Bagian Kanan: Auth Button */}
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            {user ? (
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                <Typography sx={{ color: "white", fontSize: "0.9rem" }}>
+                  Halo, {user.username}
+                </Typography>
+                <Button 
+                  onClick={logout} 
+                  variant="outlined" 
+                  sx={{ color: "white", borderColor: "#333" }}
+                >
+                  Logout
+                </Button>
+              </Box>
+            ) : (
+              <Button 
+                component={Link} 
+                href="/login" 
+                variant="contained" 
+                sx={{ bgcolor: "#ff4d00", '&:hover': { bgcolor: "#cc3d00" } }}
+              >
+                Login
+              </Button>
+            )}
+          </Box>
         </Toolbar>
       </Container>
     </AppBar>
