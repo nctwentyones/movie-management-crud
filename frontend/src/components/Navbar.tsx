@@ -39,8 +39,10 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar() {
-  const { user, logout, login } = useAuth();
+  const { user, logout, login, isLoading } = useAuth();
   const pathname = usePathname();
+
+  if (isLoading) return <nav>Loading...</nav>;
 
   return (
     <AppBar position="sticky" sx={{ bgcolor: "#000000", borderBottom: "1px solid #333" }}>

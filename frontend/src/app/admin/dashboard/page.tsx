@@ -16,17 +16,16 @@ import ModalForm from "@/components/ModalForm"; //
 import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
-  const [tabValue, setTabValue] = useState(0); // 0: Movie, 1: Series
+  const [tabValue, setTabValue] = useState(0);
   const [data, setData] = useState<Media[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Media | null>(null);
 
   const fetchData = async () => {
     try {
-      // Logic filter berdasarkan tab
       const result = tabValue === 0 
         ? await movieService.getAll() 
-        : await movieService.getAll(); // Ganti ke seriesService.getAll() jika sudah ada
+        : await movieService.getAll(); 
       setData(result);
     } catch (error) {
       toast.error("Gagal mengambil data");

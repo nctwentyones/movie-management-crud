@@ -20,7 +20,6 @@ export default function HomePage() {
         const dataMovies = await resMovies.json();
         const dataSeries = await resSeries.json();
 
-        // Validasi agar data selalu array, jika null atau error jadi []
         setMovies(Array.isArray(dataMovies) ? dataMovies : []);
         setSeries(Array.isArray(dataSeries) ? dataSeries : []);
       } catch (error) {

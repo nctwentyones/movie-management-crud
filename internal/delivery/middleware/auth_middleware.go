@@ -32,7 +32,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 		}
 
 		oidcConfig := &oidc.Config{
-			ClientID: "movie-backend",
+			ClientID: "movie-frontend",
 		}
 		verifier := provider.Verifier(oidcConfig)
 

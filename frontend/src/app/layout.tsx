@@ -23,7 +23,7 @@ export default function RootLayout({
       <body className={inter.className}>
         <AppRouterCacheProvider options={{ enableCssLayer: true }}>
           <ThemeRegistry>
-            {/* AuthProvider membungkus Navbar dan children agar login state terbaca */}
+            {/* AuthProvider */}
             <AuthProvider>
               <Navbar />
               

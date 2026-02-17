@@ -10,10 +10,8 @@ RUN go mod download
 
 COPY . .
 
-# Build tetap dilakukan untuk memastikan dependensi oke
 RUN go build -o main ./cmd/main.go
 
 EXPOSE 8081
 
-# Jalankan Air dari root direktori kerja /app
 CMD ["air", "-c", ".air.toml"]

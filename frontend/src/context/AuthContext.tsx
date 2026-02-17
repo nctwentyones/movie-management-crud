@@ -24,45 +24,48 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [token, setToken] = useState<string | undefined>(undefined);
   const keycloakRef = useRef<Keycloak | null>(null);
+  const isInitialized = useRef(false);
 
     useEffect(() => {
+    if (isInitialized.current) return;
+    isInitialized.current = true;
     const initKeycloak = async () => {
-        const kc = new Keycloak({
-        url: "http://localhost:8443",
-        realm: "movie-realm",
-        clientId: "movie-frontend",
+    const kc = new Keycloak({
+      url: "http://localhost:8443", 
+      realm: "movie-realm",
+      clientId: "movie-frontend",
+    });
+
+    try {
+      const authenticated = await kc.init({ 
+        // onLoad: "check-sso",
+        // silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+        pkceMethod: 'S256', 
+        checkLoginIframe: false 
+      });
+
+      if (authenticated) {
+        setToken(kc.token);
+        localStorage.setItem('token', kc.token || "");
+
+        const roles = kc.realmAccess?.roles || [];
+        const isAdmin = roles.includes("admin");
+
+        setUser({
+          username: kc.tokenParsed?.preferred_username || "User",
+          role: isAdmin ? "admin" : "user",
         });
+      }
+    } catch (error) {
+      console.error("Keycloak init error:", error);
+    } finally {
+      setIsLoading(false);
+      keycloakRef.current = kc;
+    }
+  };
 
-        try {
-        const authenticated = await kc.init({ 
-            onLoad: "check-sso",
-            silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html" 
-        });
-
-        if (authenticated) {
-            if (kc.token) {
-            localStorage.setItem('token', kc.token);
-            setToken(kc.token);
-            }
-
-            const roles = kc.realmAccess?.roles || [];
-            const isAdmin = roles.includes("admin");
-
-            setUser({
-            username: kc.tokenParsed?.preferred_username || "User",
-            role: isAdmin ? "admin" : "user",
-            });
-        }
-        } catch (error) {
-        console.error("Keycloak init error:", error);
-        } finally {
-        setIsLoading(false);
-        keycloakRef.current = kc;
-        }
-    };
-
-    initKeycloak();
-    }, []);
+  initKeycloak();
+}, []);
 
   const login = () => keycloakRef.current?.login();
   const logout = () => {

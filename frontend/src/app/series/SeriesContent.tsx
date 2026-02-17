@@ -21,7 +21,7 @@ export default function SeriesContent() {
       })
       .catch((err) => {
         console.error("Error fetching series:", err);
-        setSeries([]); // Set ke array kosong jika fetch gagal
+        setSeries([]); 
       });
   }, []);
 
@@ -51,7 +51,6 @@ export default function SeriesContent() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {/* PENGAMAN: Gunakan (series || []) agar map tidak pernah null */}
             {(series || []).map((item) => ( 
               <TableRow key={item.id}>
                 <TableCell sx={{ color: "white" }}>{item.title}</TableCell>
