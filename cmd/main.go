@@ -37,7 +37,7 @@ func main() {
 
 	// --- 2. ADMIN ROUTES (MANAGEMENT) ---
 	adminRouter := r.PathPrefix("/api/admin").Subrouter()
-	
+
 	adminRouter.Use(middleware.AuthMiddleware)
 
 	adminRouter.HandleFunc("/movies", movieHandler.CreateMovie).Methods("POST")

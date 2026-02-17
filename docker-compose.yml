@@ -11,7 +11,9 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_NAME}
     ports:
-      - "5433:5432"
+      # Port 5433 tetap untuk akses luar (pgAdmin/DBeaver), 
+      # tapi di dalam network tetap 5432
+      - "5433:5432" 
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -32,10 +34,12 @@ services:
     environment:
       PORT: 8081
       DB_HOST: db
-      DB_PORT: 5432
+      DB_PORT: 5432 # Gunakan port internal 5432
       DB_USER: ${DB_USER}
       DB_PASSWORD: ${DB_PASSWORD}
       DB_NAME: ${DB_NAME}
+    ports:
+      - "8081:8081" # Membuka port agar bisa diakses Frontend/Postman
     depends_on:
       db:
         condition: service_healthy
@@ -55,6 +59,7 @@ services:
     ports:
       - "3000:3000"
     environment:
+      # Pastikan ini menunjuk ke localhost karena diakses dari browser kamu
       - NEXT_PUBLIC_API_URL=http://localhost:8081
     depends_on:
       - app
@@ -90,7 +95,8 @@ services:
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
+      # Gunakan port 5432 untuk koneksi internal antar kontainer
+      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME} 
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
     ports:
