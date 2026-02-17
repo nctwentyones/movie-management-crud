@@ -28,9 +28,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     useEffect(() => {
     const initKeycloak = async () => {
         const kc = new Keycloak({
-        url: "http://localhost:8443", // Pastikan port tidak bentrok dengan backend
-        realm: "your-realm",
-        clientId: "your-client-id",
+        url: "http://localhost:8443",
+        realm: "movie-realm",
+        clientId: "movie-frontend",
         });
 
         try {
@@ -40,7 +40,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         });
 
         if (authenticated) {
-            // SIMPAN KE LOCALSTORAGE DISINI
             if (kc.token) {
             localStorage.setItem('token', kc.token);
             setToken(kc.token);

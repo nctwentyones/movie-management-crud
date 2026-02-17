@@ -11,7 +11,6 @@ export const api = axios.create({
   },
 });
 
-// Interceptor untuk pasang Token otomatis di setiap request
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null; 
   if (token) {
@@ -22,7 +21,6 @@ api.interceptors.request.use((config) => {
 
 // --- MOVIE SERVICE ---
 export const movieService = {
-  // Public Routes (Tanpa Prefix Admin)
   getAll: async () => {
     const response = await api.get<Media[]>('/movies');
     return response.data;
@@ -32,7 +30,6 @@ export const movieService = {
     return response.data;
   },
   
-  // Admin Routes (Pakai Prefix /api/admin)
   create: async (data: Partial<Media>) => {
     const response = await api.post<Media>(`${ADMIN_PREFIX}/movies`, data);
     return response.data;

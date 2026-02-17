@@ -39,7 +39,7 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 }));
 
 export default function Navbar() {
-  const { user, logout } = useAuth();
+  const { user, logout, login } = useAuth();
   const pathname = usePathname();
 
   return (
@@ -97,12 +97,11 @@ export default function Navbar() {
               </Box>
             ) : (
               <Button 
-                component={Link} 
-                href="/login" 
-                variant="contained" 
-                sx={{ bgcolor: "#ff4d00", '&:hover': { bgcolor: "#cc3d00" } }}
-              >
-                Login
+               onClick={() => login()} 
+              variant="contained" 
+              sx={{ bgcolor: "#ff4d00", '&:hover': { bgcolor: "#cc3d00" } }}
+            >
+              Login
               </Button>
             )}
           </Box>
