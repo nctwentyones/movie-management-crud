@@ -27,9 +27,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isInitialized = useRef(false);
 
     useEffect(() => {
-    if (isInitialized.current) return;
-    isInitialized.current = true;
-    const initKeycloak = async () => {
+  if (isInitialized.current) return;
+  isInitialized.current = true;
+
+  const initKeycloak = async () => {
     const kc = new Keycloak({
       url: "http://localhost:8443", 
       realm: "movie-realm",
@@ -37,30 +38,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     try {
+      // WAJIB: Aktifkan onLoad: 'check-sso'
       const authenticated = await kc.init({ 
-        // onLoad: "check-sso",
-        // silentCheckSsoRedirectUri: window.location.origin + "/silent-check-sso.html",
+        onLoad: 'check-sso',
         pkceMethod: 'S256', 
-        checkLoginIframe: false 
+        checkLoginIframe: false,
+        // Gunakan redirectUri eksplisit agar tidak bingung saat callback
+        redirectUri: window.location.origin 
       });
 
       if (authenticated) {
         setToken(kc.token);
         localStorage.setItem('token', kc.token || "");
-
         const roles = kc.realmAccess?.roles || [];
-        const isAdmin = roles.includes("admin");
-
         setUser({
           username: kc.tokenParsed?.preferred_username || "User",
-          role: isAdmin ? "admin" : "user",
+          role: roles.includes("admin") ? "admin" : "user",
         });
+      } else {
+        setIsLoading(false); 
       }
     } catch (error) {
       console.error("Keycloak init error:", error);
-    } finally {
       setIsLoading(false);
+    } finally {
       keycloakRef.current = kc;
+      setIsLoading(false);
     }
   };
 
