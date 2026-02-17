@@ -16,6 +16,7 @@ import (
 )
 
 func main() {
+	middleware.InitOIDC()
 	db := database.InitDB()
 	defer db.Close()
 

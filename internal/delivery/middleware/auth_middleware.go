@@ -2,14 +2,31 @@ package middleware
 
 import (
 	"context"
+	"log"
 	"net/http"
 	"strings"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 )
 
+var verifier *oidc.IDTokenVerifier
+
+func InitOIDC() {
+	ctx := context.Background()
+
+	provider, err := oidc.NewProvider(ctx, "http://localhost:8080/realms/movie-realm")
+	if err != nil {
+		log.Fatalf("Failed to connect to Keycloak: %v", err)
+	}
+
+	verifier = provider.Verifier(&oidc.Config{
+		ClientID: "movie-frontend",
+	})
+}
+
 func AuthMiddleware(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
 		authHeader := r.Header.Get("Authorization")
 		if authHeader == "" {
 			http.Error(w, "Authorization header is required", http.StatusUnauthorized)
@@ -24,32 +41,30 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		tokenString := parts[1]
 
-		ctx := context.Background()
-		provider, err := oidc.NewProvider(ctx, "http://localhost:8443/realms/movie-realm")
-		if err != nil {
-			http.Error(w, "Failed to connect to Keycloak", http.StatusInternalServerError)
-			return
-		}
-
-		oidcConfig := &oidc.Config{
-			ClientID: "movie-frontend",
-		}
-		verifier := provider.Verifier(oidcConfig)
+		ctx := r.Context()
 
 		idToken, err := verifier.Verify(ctx, tokenString)
 		if err != nil {
-			http.Error(w, "Invalid or expired token: "+err.Error(), http.StatusUnauthorized)
+			log.Println("Token verification failed:", err)
+			http.Error(w, "Invalid or expired token", http.StatusUnauthorized)
 			return
 		}
 
 		var claims struct {
-			PreferredUsername string   `json:"preferred_username"`
-			Roles             []string `json:"roles"`
+			PreferredUsername string `json:"preferred_username"`
+			RealmAccess struct {
+				Roles []string `json:"roles"`
+			} `json:"realm_access"`
 		}
+
 		if err := idToken.Claims(&claims); err != nil {
-			http.Error(w, "Failed to parse claims", http.StatusInternalServerError)
+			log.Println("Failed to parse claims:", err)
+			http.Error(w, "Failed to parse token claims", http.StatusInternalServerError)
 			return
 		}
+
+		log.Println("User:", claims.PreferredUsername)
+		log.Println("Roles:", claims.RealmAccess.Roles)
 
 		next.ServeHTTP(w, r)
 	})
