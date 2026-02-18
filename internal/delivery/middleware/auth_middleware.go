@@ -5,6 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/coreos/go-oidc/v3/oidc"
 )
@@ -14,14 +15,27 @@ var verifier *oidc.IDTokenVerifier
 func InitOIDC() {
 	ctx := context.Background()
 
-	provider, err := oidc.NewProvider(ctx, "http://localhost:8080/realms/movie-realm")
+	var provider *oidc.Provider
+	var err error
+
+	for i := 0; i < 10; i++ {
+		provider, err = oidc.NewProvider(ctx, "http://movie-keycloak:8080/realms/movie-realm")
+		if err == nil {
+			break
+		}
+
+		log.Println("Waiting for Keycloak...")
+		time.Sleep(5 * time.Second)
+	}
+
 	if err != nil {
-		log.Fatalf("Failed to connect to Keycloak: %v", err)
+		log.Fatalf("Failed to connect to Keycloak after retries: %v", err)
 	}
 
 	verifier = provider.Verifier(&oidc.Config{
 		ClientID: "movie-frontend",
 	})
+
 }
 
 func AuthMiddleware(next http.Handler) http.Handler {

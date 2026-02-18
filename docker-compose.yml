@@ -87,21 +87,14 @@ services:
     container_name: movie-keycloak
     command: start-dev
     environment:
-      KC_HOSTNAME: localhost
-      KC_HOSTNAME_PORT: 8443
-      KC_HOSTNAME_STRICT: "false"
-      KC_HOSTNAME_STRICT_BACKCHANNEL: "false"
-      KC_HTTP_ENABLED: "true"
-      KC_HTTP_PORT: 8443
       KEYCLOAK_ADMIN: admin
       KEYCLOAK_ADMIN_PASSWORD: admin
       KC_DB: postgres
-      # Gunakan port 5432 untuk koneksi internal antar kontainer
-      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME} 
+      KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
     ports:
-      - "8443:8443"
+      - "9000:8080"
     networks:
       - movie_network
     depends_on:
