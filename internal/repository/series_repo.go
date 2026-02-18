@@ -73,10 +73,10 @@ func (r *seriesRepo) GetByID(id int) (*models.Media, error) {
 
 func (r *seriesRepo) Update(id int, s *models.Media) error {
 	query := `UPDATE medias 
-              SET title=$1, year=$2, director=$3, genre_id=$4, poster_url=$5 
-              WHERE id=$6 AND type='series'`
+              SET type=$1, title=$2, year=$3, director=$4, genre_id=$5, poster_url=$6 
+              WHERE id=$7`
 
-	result, err := r.db.Exec(query, s.Title, s.Year, s.Director, s.GenreID, s.PosterURL, id)
+	result, err := r.db.Exec(query, s.Type, s.Title, s.Year, s.Director, s.GenreID, s.PosterURL, id)
 	if err != nil {
 		return err
 	}

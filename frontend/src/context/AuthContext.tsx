@@ -56,7 +56,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         setUser({
           username: kc.tokenParsed?.preferred_username || "User",
-          // FIXED: Changed 'roles' to 'allRoles'
           role: allRoles.includes("admin") ? "admin" : "user",
         });
       }

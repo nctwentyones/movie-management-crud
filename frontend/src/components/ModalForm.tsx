@@ -17,12 +17,21 @@ interface ModalFormProps {
 
 const emptyState: Partial<Media> = {
   title: "",
-  genre: "",
+  genre_id: 0,
   year: new Date().getFullYear(),
   director: "",
   poster_url: "",
   type: "movie" 
 };
+
+// Data statis untuk Genre
+const GENRES = [
+  { id: 1, name: "Action" },
+  { id: 2, name: "Sci-Fi" },
+  { id: 3, name: "Drama" },
+  { id: 4, name: "Comedy" },
+  { id: 5, name: "Horror" },
+];
 
 const inputStyle = {
   "& .MuiInputBase-input": { color: "white" },
@@ -39,12 +48,13 @@ const inputStyle = {
 
 export default function ModalForm({ open, onClose, title, onSubmit, initialData }: ModalFormProps) {
   const [formData, setFormData] = useState<Partial<Media>>(emptyState);
-  
+
+  // Form Validation
   const isFormValid = 
     formData.title?.trim() !== "" && 
-    formData.genre?.trim() !== "" && 
+    (formData.genre_id !== undefined && formData.genre_id > 0) && 
     formData.director?.trim() !== "" && 
-    (formData.year && formData.year > 1800) && 
+    (formData.year !== undefined && formData.year > 1800) && 
     formData.poster_url?.trim() !== "";
 
   useEffect(() => {
@@ -57,7 +67,9 @@ export default function ModalForm({ open, onClose, title, onSubmit, initialData 
     const { name, value } = e.target;
     setFormData(prev => ({ 
       ...prev, 
-      [name]: name === "year" ? (value === "" ? 0 : parseInt(value)) : value 
+      [name]: (name === "year" || name === "genre_id") 
+        ? (value === "" ? 0 : parseInt(value)) 
+        : value 
     }));
   };
 
@@ -93,11 +105,26 @@ export default function ModalForm({ open, onClose, title, onSubmit, initialData 
             sx={inputStyle}
           />
 
+          {/* DROP-DOWN GENRE */}
           <TextField
-            fullWidth name="genre" label="Genre" margin="normal"
-            value={formData.genre} onChange={handleChange}
+            select
+            fullWidth 
+            name="genre_id"
+            label="Genre" 
+            margin="normal"
+            value={formData.genre_id || ""} 
+            onChange={handleChange}
             sx={inputStyle}
-          />
+            error={!formData.genre_id || formData.genre_id === 0}
+            helperText={(!formData.genre_id || formData.genre_id === 0) ? "Please select a genre" : ""}
+          >
+            <MenuItem value=""><em>None</em></MenuItem>
+            {GENRES.map((g) => (
+              <MenuItem key={g.id} value={g.id}>
+                {g.name}
+              </MenuItem>
+            ))}
+          </TextField>   
 
           <TextField
             fullWidth name="director" label="Director" margin="normal"

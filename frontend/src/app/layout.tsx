@@ -5,6 +5,7 @@ import ThemeRegistry from "@/components/ThemeRegistry";
 import Navbar from "@/components/Navbar";
 import { Toaster } from 'react-hot-toast';
 import { AuthProvider } from "@/context/AuthContext";
+import AuthTokenInitializer from "@/components/AuthTokenInitializer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -25,6 +26,7 @@ export default function RootLayout({
           <ThemeRegistry>
             {/* AuthProvider */}
             <AuthProvider>
+              <AuthTokenInitializer />
               <Navbar />
               
               <main>

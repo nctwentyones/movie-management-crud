@@ -9,10 +9,10 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import DeleteIcon from "@mui/icons-material/Delete";
 import AddIcon from "@mui/icons-material/Add";
-import { movieService } from "@/services/api"; //
+import { movieService, seriesService} from "@/services/api"; //
 import { Media } from "@/types/media";
 import RoleGuard from "@/components/auth/RoleGuard";
-import ModalForm from "@/components/ModalForm"; //
+import ModalForm from "@/components/ModalForm"; 
 import toast from "react-hot-toast";
 
 export default function AdminDashboard() {
@@ -20,17 +20,16 @@ export default function AdminDashboard() {
   const [data, setData] = useState<Media[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Media | null>(null);
+  const currentService = tabValue === 0 ? movieService : seriesService;
 
   const fetchData = async () => {
-    try {
-      const result = tabValue === 0 
-        ? await movieService.getAll() 
-        : await movieService.getAll(); 
-      setData(result);
-    } catch (error) {
-      toast.error("Gagal mengambil data");
-    }
-  };
+      try {
+        const result = await currentService.getAll(); 
+        setData(result);
+      } catch (error) {
+        toast.error("Gagal mengambil data");
+      }
+    };
 
   useEffect(() => {
     fetchData();
@@ -39,7 +38,7 @@ export default function AdminDashboard() {
   const handleDelete = async (id: number) => {
     if (confirm("Yakin ingin menghapus data ini?")) {
       try {
-        await movieService.delete(id); //
+        await currentService.delete(id);  
         toast.success("Data berhasil dihapus");
         fetchData();
       } catch (error) {
@@ -55,16 +54,25 @@ export default function AdminDashboard() {
 
   const handleFormSubmit = async (formData: Partial<Media>) => {
     try {
+      const currentService = tabValue === 0 ? movieService : seriesService;
+
       if (selectedItem) {
-        await movieService.update(selectedItem.id, formData); //
+        await currentService.update(selectedItem.id, formData); 
         toast.success("Data berhasil diupdate");
       } else {
-        await movieService.create(formData); //
+
+        const payload = { 
+          ...formData, 
+          type: tabValue === 0 ? "movie" : "series" 
+        } as Media; 
+        
+        await currentService.create(payload); 
         toast.success("Data berhasil ditambah");
       }
       setIsModalOpen(false);
       fetchData();
     } catch (error) {
+      console.error(error); 
       toast.error("Terjadi kesalahan saat menyimpan data");
     }
   };
@@ -114,7 +122,7 @@ export default function AdminDashboard() {
                   <TableRow key={item.id} sx={{ "& td": { color: "white", borderBottom: "1px solid #222" } }}>
                     <TableCell sx={{ fontWeight: "medium" }}>{item.title}</TableCell>
                     <TableCell>{item.year}</TableCell>
-                    <TableCell>{item.genre}</TableCell>
+                    <TableCell>{item.genre_name}</TableCell>
                     <TableCell>{item.director}</TableCell>
                     <TableCell align="right">
                       <IconButton onClick={() => handleOpenModal(item)} sx={{ color: "#ff4d00" }}>

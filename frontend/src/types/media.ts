@@ -5,7 +5,7 @@ export interface Media {
   year: number;
   director: string;
   genre_id: number; 
-  genre: string;    
+  genre_name: string;    
   poster_url: string;
   created_at: string;
 }

@@ -11,6 +11,14 @@ export const api = axios.create({
   },
 });
 
+export const setAuthToken = (token: string | null) => {
+  if (token) {
+    api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete api.defaults.headers.common['Authorization'];
+  }
+};
+
 api.interceptors.request.use((config) => {
   const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null; 
   if (token) {
@@ -18,6 +26,13 @@ api.interceptors.request.use((config) => {
   }
   return config;
 });
+
+export const genreService = {
+  getAll: async () => {
+    const response = await api.get('/genres');
+    return response.data;
+  },
+};
 
 // --- MOVIE SERVICE ---
 export const movieService = {
