@@ -10,18 +10,15 @@ export default function RoleGuard({ children, adminOnly = false }: { children: R
 
   useEffect(() => {
     if (!isLoading) {
-      // Jika tidak ada user, tendang ke login
       if (!user) {
         router.push("/login");
-      } 
-      // Jika butuh admin tapi user bukan admin, tendang ke home
+      }
       else if (adminOnly && user.role !== 'admin') {
         router.push("/");
       }
     }
   }, [user, isLoading, router, adminOnly]);
 
-  // Tampilkan loading spinner saat mengecek status login
   if (isLoading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', bgcolor: '#000' }}>
@@ -30,6 +27,5 @@ export default function RoleGuard({ children, adminOnly = false }: { children: R
     );
   }
 
-  // Jika semua kondisi terpenuhi, tampilkan konten
   return <>{children}</>;
 }

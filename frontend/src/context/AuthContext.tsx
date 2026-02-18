@@ -26,7 +26,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const keycloakRef = useRef<Keycloak | null>(null);
   const isInitialized = useRef(false);
 
-    useEffect(() => {
+  useEffect(() => {
   if (isInitialized.current) return;
   isInitialized.current = true;
 
@@ -38,31 +38,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     });
 
     try {
-      // WAJIB: Aktifkan onLoad: 'check-sso'
-      const authenticated = await kc.init({ 
-        onLoad: 'check-sso',
-        pkceMethod: 'S256', 
-        checkLoginIframe: false,
-        // Gunakan redirectUri eksplisit agar tidak bingung saat callback
-        redirectUri: window.location.origin 
-      });
+    const authenticated = await kc.init({
+      onLoad: 'login-required',
+      pkceMethod: 'S256',
+      checkLoginIframe: false
+    });
+
+      keycloakRef.current = kc; 
 
       if (authenticated) {
         setToken(kc.token);
         localStorage.setItem('token', kc.token || "");
-        const roles = kc.realmAccess?.roles || [];
+        
+        const realmRoles = kc.realmAccess?.roles || [];
+        const clientRoles = kc.resourceAccess?.["movie-frontend"]?.roles || [];
+        const allRoles = [...realmRoles, ...clientRoles];
+
         setUser({
           username: kc.tokenParsed?.preferred_username || "User",
-          role: roles.includes("admin") ? "admin" : "user",
+          // FIXED: Changed 'roles' to 'allRoles'
+          role: allRoles.includes("admin") ? "admin" : "user",
         });
-      } else {
-        setIsLoading(false); 
       }
     } catch (error) {
       console.error("Keycloak init error:", error);
-      setIsLoading(false);
     } finally {
-      keycloakRef.current = kc;
       setIsLoading(false);
     }
   };
