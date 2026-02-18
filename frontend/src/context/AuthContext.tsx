@@ -32,7 +32,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const initKeycloak = async () => {
     const kc = new Keycloak({
-      url: "http://localhost:8443", 
+      url: "http://localhost:9000", 
       realm: "movie-realm",
       clientId: "movie-frontend",
     });

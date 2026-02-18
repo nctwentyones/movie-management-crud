@@ -19,7 +19,7 @@ func InitOIDC() {
 	var err error
 
 	for i := 0; i < 10; i++ {
-		provider, err = oidc.NewProvider(ctx, "http://movie-keycloak:8080/realms/movie-realm")
+		provider, err = oidc.NewProvider(ctx, "http://localhost:9000/realms/movie-realm")
 		if err == nil {
 			break
 		}

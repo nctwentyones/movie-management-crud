@@ -48,6 +48,8 @@ services:
       - go_modules:/go/pkg/mod
     networks:
       - movie_network
+    extra_hosts:
+      - "localhost:host-gateway"
 
   # 3. FRONTEND (NEXT.JS)
   frontend:
@@ -93,6 +95,8 @@ services:
       KC_DB_URL: jdbc:postgresql://db:5432/${DB_NAME}
       KC_DB_USERNAME: ${DB_USER}
       KC_DB_PASSWORD: ${DB_PASSWORD}
+      KC_HOSTNAME_URL: http://localhost:9000
+      KC_HOSTNAME_STRICT: "false"
     ports:
       - "9000:8080"
     networks:
@@ -100,6 +104,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - keycloak_data:/opt/keycloak/data
 
 networks:
   movie_network:
@@ -108,3 +114,4 @@ networks:
 volumes:
   postgres_data:
   go_modules:
+  keycloak_data:
