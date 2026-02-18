@@ -107,24 +107,26 @@ export default function ModalForm({ open, onClose, title, onSubmit, initialData 
 
           {/* DROP-DOWN GENRE */}
           <TextField
-            select
-            fullWidth 
-            name="genre_id"
-            label="Genre" 
-            margin="normal"
-            value={formData.genre_id || ""} 
-            onChange={handleChange}
-            sx={inputStyle}
-            error={!formData.genre_id || formData.genre_id === 0}
-            helperText={(!formData.genre_id || formData.genre_id === 0) ? "Please select a genre" : ""}
-          >
-            <MenuItem value=""><em>None</em></MenuItem>
+          select
+          fullWidth 
+          name="genre_id"
+          label="Genre" 
+          margin="normal"
+          // Pastikan value adalah 0 jika undefined/null agar sesuai dengan tipe data GENRES.id (number)
+          value={formData.genre_id ?? 0} 
+          onChange={handleChange}
+          sx={inputStyle}
+          error={!formData.genre_id || formData.genre_id === 0}
+          helperText={(!formData.genre_id || formData.genre_id === 0) ? "Please select a genre" : ""}
+        >
+            {/* Gunakan value 0 untuk opsi 'None' agar tetap bertipe number */}
+            <MenuItem value={0}><em>None</em></MenuItem>
             {GENRES.map((g) => (
               <MenuItem key={g.id} value={g.id}>
                 {g.name}
               </MenuItem>
             ))}
-          </TextField>   
+          </TextField>
 
           <TextField
             fullWidth name="director" label="Director" margin="normal"

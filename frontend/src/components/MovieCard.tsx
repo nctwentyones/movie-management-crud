@@ -34,7 +34,7 @@ export default function MovieCard({ item }: MovieCardProps) {
           </Typography>
         </Box>
         <Chip 
-          label={item.genre} 
+          label={item.genre_name} 
           size="small" 
           sx={{ bgcolor: "#333", color: "gray", fontSize: "0.7rem" }} 
         />

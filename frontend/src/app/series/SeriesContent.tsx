@@ -54,7 +54,7 @@ export default function SeriesContent() {
             {(series || []).map((item) => ( 
               <TableRow key={item.id}>
                 <TableCell sx={{ color: "white" }}>{item.title}</TableCell>
-                <TableCell sx={{ color: "white" }}>{item.genre}</TableCell>
+                <TableCell sx={{ color: "white" }}>{item.genre_name}</TableCell>
                 <TableCell sx={{ color: "white" }}>{item.year}</TableCell>
                 <TableCell align="right">
                   <IconButton sx={{ color: "#ff4d00" }}><EditIcon /></IconButton>

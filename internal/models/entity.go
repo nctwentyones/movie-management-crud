@@ -9,7 +9,7 @@ type Media struct {
 	Year      int       `json:"year" db:"year"`
 	Director  string    `json:"director" db:"director"`
 	GenreID   int       `json:"genre_id" db:"genre_id"`
-	GenreName string    `json:"genre" db:"genre_name"`
+	GenreName string    `json:"genre_name" db:"genre_name"`
 	PosterURL string    `json:"poster_url" db:"poster_url"`
 	CreatedAt time.Time `json:"created_at" db:"created_at"`
 }
