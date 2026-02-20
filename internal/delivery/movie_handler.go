@@ -2,12 +2,13 @@ package delivery
 
 import (
 	"encoding/json"
-	"net/http"
-	"strconv"
 	"movie_crud/internal/models"
 	"movie_crud/internal/usecase"
+	"net/http"
+	"strconv"
+	"fmt"
 
-	"github.com/gorilla/mux" 
+	"github.com/gorilla/mux"
 )
 
 type MovieHandler struct {
@@ -19,41 +20,58 @@ func NewMovieHandler(u usecase.MovieUsecase) *MovieHandler {
 }
 
 func (h *MovieHandler) GetMovies(w http.ResponseWriter, r *http.Request) {
-    title := r.URL.Query().Get("title")
+    search := r.URL.Query().Get("search")
+    genreID, _ := strconv.Atoi(r.URL.Query().Get("genre_id"))
+    page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+
+    if page <= 0 { page = 1 }
+    if limit <= 0 { limit = 10 }
+
+    fmt.Printf("Backend Received Search Movie Query: [%s], Genre: %d, Page: %d\n", search, genreID, page)
+
     var movies []models.Media
+    var total int
     var err error
 
-    if title != "" {
-        movies, err = h.usecase.SearchMovies(title)
+    if search != "" || genreID != 0 {
+        movies, total, err = h.usecase.SearchMovies(search, genreID, limit, page)
     } else {
-        movies, err = h.usecase.FetchAllMovies()
+        movies, total, err = h.usecase.FetchAllMovies(limit, page)
     }
 
     if err != nil {
-        http.Error(w, err.Error(), http.StatusInternalServerError)
+        sendError(w, err.Error(), http.StatusInternalServerError)
         return
     }
 
+    response := map[string]interface{}{
+        "data":       movies,
+        "total":      total,
+        "page":       page,
+        "limit":      limit,
+    }
+
     w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(movies)
+    json.NewEncoder(w).Encode(response)
 }
 
 func (h *MovieHandler) GetMovieByID(w http.ResponseWriter, r *http.Request) {
-    vars := mux.Vars(r)
-    id, err := strconv.Atoi(vars["id"])
-    if err != nil {
-        http.Error(w, "Invalid Movie ID", http.StatusBadRequest)
-        return
-    }
+	vars := mux.Vars(r)
+	id, err := strconv.Atoi(vars["id"])
+	if err != nil {
+		http.Error(w, "Invalid Movie ID", http.StatusBadRequest)
+		return
+	}
 
-    movie, err := h.usecase.SearchMoviesByID(id)
-    if err != nil {
-        http.Error(w, "Movie not found", http.StatusNotFound)
-        return
-    }
+	movie, err := h.usecase.SearchMoviesByID(id)
+	if err != nil {
+		http.Error(w, "Movie not found", http.StatusNotFound)
+		return
+	}
 
-    w.Header().Set("Content-Type", "application/json")
-    json.NewEncoder(w).Encode(movie)
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(movie)
 }
 
 func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
@@ -72,10 +90,9 @@ func (h *MovieHandler) CreateMovie(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(map[string]string{"message": "Movie created successfully"})
 }
 
-
 func (h *MovieHandler) UpdateMovie(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	id, err := strconv.Atoi(vars["id"]) 
+	id, err := strconv.Atoi(vars["id"])
 	if err != nil {
 		http.Error(w, "Invalid Movie ID", http.StatusBadRequest)
 		return

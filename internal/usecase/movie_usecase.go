@@ -8,11 +8,11 @@ import (
 
 type MovieUsecase interface {
 	AddMovie(movie *models.Media) error
-	FetchAllMovies() ([]models.Media, error)
+	FetchAllMovies(limit, page int) ([]models.Media, int, error)
 	EditMovie(id int, movie *models.Media) error
 	RemoveMovie(id int) error
-	SearchMovies(title string) ([]models.Media, error)
-	SearchMoviesByID(id int) (*models.Media, error) 
+	SearchMovies(title string, genreID, limit, page int) ([]models.Media, int, error)
+	SearchMoviesByID(id int) (*models.Media, error)
 }
 
 type movieUsecase struct {
@@ -34,8 +34,9 @@ func (u *movieUsecase) AddMovie(m *models.Media) error {
 	return u.repo.Create(m)
 }
 
-func (u *movieUsecase) FetchAllMovies() ([]models.Media, error) {
-	return u.repo.GetAll()
+func (u *movieUsecase) FetchAllMovies(limit, page int) ([]models.Media, int, error) {
+	offset := (page - 1) * limit
+	return u.repo.GetAll(limit, offset)
 }
 
 func (u *movieUsecase) EditMovie(id int, m *models.Media) error {
@@ -46,6 +47,7 @@ func (u *movieUsecase) RemoveMovie(id int) error {
 	return u.repo.Delete(id)
 }
 
-func (u *movieUsecase) SearchMovies(title string) ([]models.Media, error) {
-	return u.repo.SearchByTitle(title)
+func (u *movieUsecase) SearchMovies(title string, genreID, limit, page int) ([]models.Media, int, error) {
+	offset := (page - 1) * limit
+	return u.repo.Search(title, genreID, limit, offset)
 }

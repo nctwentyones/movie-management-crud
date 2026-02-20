@@ -5,6 +5,8 @@ import { usePathname } from "next/navigation";
 import { AppBar, Container, Toolbar, Typography, Box, Button, InputBase, styled, alpha } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { useAuth } from "@/context/AuthContext";
+import { useRouter } from "next/navigation"; 
+import { useState } from "react";
 
 const Search = styled('div')(({ theme }) => ({
   position: 'relative',
@@ -41,6 +43,14 @@ const StyledInputBase = styled(InputBase)(({ theme }) => ({
 export default function Navbar() {
   const { user, logout, login, isLoading } = useAuth();
   const pathname = usePathname();
+  const router = useRouter(); 
+  const [searchQuery, setSearchQuery] = useState(""); 
+
+  const handleSearch = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      router.push(`${pathname}?search=${searchQuery}`);
+    }
+  };
 
   if (isLoading) return <nav>Loading...</nav>;
 
@@ -78,7 +88,12 @@ export default function Navbar() {
 
             <Search>
               <SearchIconWrapper><SearchIcon /></SearchIconWrapper>
-              <StyledInputBase placeholder="Search…" />
+              <StyledInputBase 
+                placeholder="Search…" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyDown={handleSearch} 
+              />
             </Search>
           </Box>
           

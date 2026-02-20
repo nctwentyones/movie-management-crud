@@ -24,13 +24,12 @@ const emptyState: Partial<Media> = {
   type: "movie" 
 };
 
-// Data statis untuk Genre
 const GENRES = [
-  { id: 1, name: "Action" },
-  { id: 2, name: "Sci-Fi" },
-  { id: 3, name: "Drama" },
-  { id: 4, name: "Comedy" },
-  { id: 5, name: "Horror" },
+  { id: 1, name: "Sci-Fi" },
+  { id: 2, name: "Action" },
+  { id: 3, name: "Fantasy" },
+  { id: 4, name: "Drama" },
+  { id: 5, name: "Thriller" },
 ];
 
 const inputStyle = {

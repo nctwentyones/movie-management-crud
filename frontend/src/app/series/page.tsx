@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react"; //
 import SeriesContent from "./SeriesContent";
 
 export const metadata: Metadata = {
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function SeriesPage() {
-  return <SeriesContent />;
+  return (
+    <Suspense fallback={<div style={{ color: "white" }}>Loading search...</div>}>
+      <SeriesContent />
+    </Suspense>
+  );
 }

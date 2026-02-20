@@ -7,6 +7,7 @@ import (
 	"database/sql"
 	"movie_crud/internal/models"
 	"movie_crud/internal/usecase"
+	"fmt"
 
 	"github.com/gorilla/mux"
 )
@@ -26,23 +27,40 @@ func sendError(w http.ResponseWriter, message string, code int) {
 }
 
 func (h *SeriesHandler) GetSeries(w http.ResponseWriter, r *http.Request) {
-	title := r.URL.Query().Get("title")
-	var series []models.Media
-	var err error
+    search := r.URL.Query().Get("search")
+    genreID, _ := strconv.Atoi(r.URL.Query().Get("genre_id"))
+    page, _ := strconv.Atoi(r.URL.Query().Get("page"))
+    limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
 
-	if title != "" {
-		series, err = h.usecase.SearchSeries(title)
-	} else {
-		series, err = h.usecase.FetchAllSeries()
-	}
+    if page <= 0 { page = 1 }
+    if limit <= 0 { limit = 10 }
 
-	if err != nil {
-		sendError(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
+    fmt.Printf("Backend Received Search Query: [%s], Genre: %d, Page: %d\n", search, genreID, page)
 
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(series)
+    var series []models.Media
+    var total int
+    var err error
+
+    if search != "" || genreID != 0 {
+        series, total, err = h.usecase.SearchSeries(search, genreID, limit, page)
+    } else {
+        series, total, err = h.usecase.FetchAllSeries(limit, page)
+    }
+
+    if err != nil {
+        sendError(w, err.Error(), http.StatusInternalServerError)
+        return
+    }
+
+    response := map[string]interface{}{
+        "data":       series,
+        "total":      total,
+        "page":       page,
+        "limit":      limit,
+    }
+
+    w.Header().Set("Content-Type", "application/json")
+    json.NewEncoder(w).Encode(response)
 }
 
 func (h *SeriesHandler) GetSeriesByID(w http.ResponseWriter, r *http.Request) {

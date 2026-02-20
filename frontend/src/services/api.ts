@@ -4,6 +4,13 @@ import { Media } from '@/types/media';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8081';
 const ADMIN_PREFIX = '/api/admin';
 
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
 export const api = axios.create({
   baseURL: API_URL,
   headers: {
@@ -36,10 +43,18 @@ export const genreService = {
 
 // --- MOVIE SERVICE ---
 export const movieService = {
-  getAll: async () => {
-    const response = await api.get<Media[]>('/movies');
-    return response.data;
+  getAll: async (search: string = "", page: number = 1, limit: number = 10, genreId: number = 0) => {
+    const response = await api.get<PaginatedResponse<Media>>('/movies', {
+      params: { 
+        search, 
+        page, 
+        limit, 
+        genre_id: genreId 
+      } 
+    });
+    return response.data; 
   },
+
   getById: async (id: number) => {
     const response = await api.get<Media>(`/movies/${id}`);
     return response.data;
@@ -60,11 +75,18 @@ export const movieService = {
 
 // --- SERIES SERVICE ---
 export const seriesService = {
-  // Public Routes
-  getAll: async () => {
-    const response = await api.get<Media[]>('/series'); 
+  getAll: async (search: string = "", page: number = 1, limit: number = 10, genreId: number = 0) => {
+    const response = await api.get<PaginatedResponse<Media>>('/series', {
+      params: { 
+        search, 
+        page, 
+        limit, 
+        genre_id: genreId 
+      } 
+    });
     return response.data;
   },
+
   getById: async (id: number) => {
     const response = await api.get<Media>(`/series/${id}`);
     return response.data;
